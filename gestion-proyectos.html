@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProyectaApp — Gestión de Proyectos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f11;
+  --surface: #16181c;
+  --surface2: #1e2126;
+  --border: #2a2d33;
+  --border2: #383c44;
+  --text: #e8eaf0;
+  --text2: #8b8f9a;
+  --text3: #555a66;
+  --accent: #c8ff57;
+  --accent-dim: rgba(200,255,87,0.12);
+  --accent-dim2: rgba(200,255,87,0.06);
+  --blue: #4fa3ff;
+  --blue-dim: rgba(79,163,255,0.12);
+  --amber: #ffb547;
+  --amber-dim: rgba(255,181,71,0.12);
+  --red: #ff5f57;
+  --red-dim: rgba(255,95,87,0.12);
+  --green: #4ade80;
+  --green-dim: rgba(74,222,128,0.1);
+  --purple: #a78bfa;
+  --r: 8px;
+  --r2: 12px;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'Instrument Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  left: 0; top: 0;
+  z-index: 100;
+}
+.sidebar-logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo h1 {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.sidebar-logo p {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+.nav-section-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  padding: 14px 20px 6px;
+  letter-spacing: 0.08em;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  font-family: var(--font-body);
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active {
+  color: var(--accent);
+  background: var(--accent-dim2);
+  border-left-color: var(--accent);
+  font-weight: 500;
+}
+.nav-item .icon { font-size: 14px; opacity: 0.7; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--red-dim);
+  color: var(--red);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+}
+
+/* ── MAIN ── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+}
+.topbar-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.btn {
+  padding: 7px 14px;
+  border-radius: var(--r);
+  font-size: 12px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+}
+.btn:hover { border-color: var(--border2); background: var(--surface2); color: var(--text); }
+.btn-accent {
+  background: var(--accent);
+  color: #0e0f11;
+  border-color: var(--accent);
+  font-weight: 500;
+}
+.btn-accent:hover { background: #d4ff6a; color: #0e0f11; }
+.content { padding: 24px 28px; flex: 1; }
+
+/* ── SECTIONS ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── METRICS ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.mc-green::before { background: var(--accent); }
+.mc-blue::before { background: var(--blue); }
+.mc-amber::before { background: var(--amber); }
+.mc-red::before { background: var(--red); }
+.metric-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.metric-value {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.mv-green { color: var(--accent); }
+.mv-blue { color: var(--blue); }
+.mv-amber { color: var(--amber); }
+.mv-red { color: var(--red); }
+.metric-sub { font-size: 11px; color: var(--text3); }
+
+/* ── PROJECTS TABLE ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.card-count {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  white-space: nowrap;
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.project-name { font-weight: 500; font-family: var(--font-body); }
+.project-code { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+.badge-purple { background: rgba(167,139,250,0.1); color: var(--purple); }
+.badge-gray { background: rgba(139,143,154,0.1); color: var(--text2); }
+
+/* ── PROGRESS BAR ── */
+.progress { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; min-width: 80px; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.pf-accent { background: var(--accent); }
+.pf-blue { background: var(--blue); }
+.pf-amber { background: var(--amber); }
+.pf-red { background: var(--red); }
+.prog-label { font-size: 10px; font-family: var(--font-mono); color: var(--text3); margin-bottom: 3px; }
+
+/* ── AVATARS ── */
+.avatars { display: flex; }
+.av {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 600;
+  border: 2px solid var(--surface);
+  margin-right: -6px;
+  font-family: var(--font-mono);
+}
+.av-g { background: rgba(200,255,87,0.2); color: var(--accent); }
+.av-b { background: var(--blue-dim); color: var(--blue); }
+.av-a { background: var(--amber-dim); color: var(--amber); }
+.av-r { background: var(--red-dim); color: var(--red); }
+.av-p { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+/* ── ACTION BTN ── */
+.act-btn {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.act-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+.act-btn-accent { border-color: var(--accent); color: var(--accent); }
+.act-btn-accent:hover { background: var(--accent-dim); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  width: 480px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.modal-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; }
+.modal-close { background: none; border: none; color: var(--text3); font-size: 18px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.modal-close:hover { color: var(--text); background: var(--surface2); }
+.form-group { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+}
+.form-textarea { resize: vertical; min-height: 70px; }
+.form-select option { background: var(--surface2); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ── LOADING & EMPTY ── */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text3);
+  font-size: 12px;
+}
+
+/* ── SETUP PANEL ── */
+.setup-card {
+  max-width: 580px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 28px;
+}
+.setup-step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.setup-step:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-content h3 { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.step-content p { font-size: 12px; color: var(--text2); line-height: 1.5; margin-bottom: 8px; }
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+/* ── MILESTONE ROW ── */
+.milestone-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.milestone-row:last-child { border-bottom: none; }
+.milestone-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.md-green { background: var(--accent); }
+.md-amber { background: var(--amber); }
+.md-red { background: var(--red); }
+.md-gray { background: var(--border2); }
+.milestone-info { flex: 1; }
+.milestone-name { font-size: 12px; font-weight: 500; }
+.milestone-meta { font-size: 11px; color: var(--text3); font-family: var(--font-mono); margin-top: 1px; }
+.milestone-date { font-family: var(--font-mono); font-size: 11px; color: var(--text2); }
+
+/* ── TEAM GRID ── */
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.team-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.team-avatar-lg {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600;
+  font-family: var(--font-mono);
+}
+.team-name { font-weight: 500; font-size: 13px; }
+.team-role { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.team-stats { display: flex; gap: 8px; margin-top: 4px; }
+.team-stat { font-size: 10px; font-family: var(--font-mono); color: var(--text3); }
+.team-stat strong { color: var(--text2); }
+
+/* ── COMMITMENTS ── */
+.comm-filters { display: flex; gap: 8px; padding: 12px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.filter-btn {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text3);
+  transition: all 0.15s;
+}
+.filter-btn:hover { color: var(--text); border-color: var(--border2); }
+.filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+/* ── ALERT ── */
+.alert {
+  padding: 10px 14px;
+  border-radius: var(--r);
+  font-size: 12px;
+  margin-bottom: 16px;
+  display: none;
+}
+.alert.show { display: flex; align-items: center; gap: 8px; }
+.alert-success { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--green); }
+.alert-error { background: var(--red-dim); border: 1px solid rgba(255,95,87,0.2); color: var(--red); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>ProyectaApp</h1>
+    <p>gestión integral · v1.0</p>
+  </div>
+  <div class="nav-section-label">General</div>
+  <div class="nav-item active" onclick="navigate('dashboard')">
+    <span class="icon">◈</span> Panel principal
+  </div>
+  <div class="nav-item" onclick="navigate('projects')">
+    <span class="icon">◻</span> Proyectos
+  </div>
+  <div class="nav-section-label">Seguimiento</div>
+  <div class="nav-item" onclick="navigate('budgets')">
+    <span class="icon">◈</span> Presupuestos
+  </div>
+  <div class="nav-item" onclick="navigate('objectives')">
+    <span class="icon">◻</span> Objetivos
+  </div>
+  <div class="nav-item" onclick="navigate('milestones')">
+    <span class="icon">◈</span> Hitos
+  </div>
+  <div class="nav-item" onclick="navigate('commitments')" id="nav-commitments">
+    <span class="icon">◻</span> Compromisos
+    <span class="nav-badge" id="overdue-badge" style="display:none">0</span>
+  </div>
+  <div class="nav-section-label">Equipo</div>
+  <div class="nav-item" onclick="navigate('team')">
+    <span class="icon">◈</span> Profesionales
+  </div>
+  <div class="nav-section-label">Sistema</div>
+  <div class="nav-item" onclick="navigate('setup')">
+    <span class="icon">◻</span> Configuración
+  </div>
+  <div class="sidebar-footer">
+    Datos: Google Sheets<br>
+    <span id="last-sync" style="color:var(--text3)">Sin sincronizar</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Panel principal</div>
+    <div class="topbar-right">
+      <span style="font-size:11px;font-family:var(--font-mono);color:var(--text3)" id="sheets-status">● Sin conectar</span>
+      <button class="btn" onclick="loadAllData()">↺ Sincronizar</button>
+      <button class="btn btn-accent" id="topbar-action" style="display:none">+ Agregar</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- ALERT -->
+    <div class="alert" id="global-alert"></div>
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="section-dashboard">
+      <div class="metrics-grid">
+        <div class="metric-card mc-green">
+          <div class="metric-label">Proyectos activos</div>
+          <div class="metric-value mv-green" id="m-projects">—</div>
+          <div class="metric-sub" id="m-projects-sub">cargando...</div>
+        </div>
+        <div class="metric-card mc-blue">
+          <div class="metric-label">Presupuesto total</div>
+          <div class="metric-value mv-blue" id="m-budget">—</div>
+          <div class="metric-sub" id="m-budget-sub">cargando...</div>
+        </div>
+        <div class="metric-card mc-amber">
+          <div class="metric-label">Hitos próximos</div>
+          <div class="metric-value mv-amber" id="m-milestones">—</div>
+          <div class="metric-sub">en los próximos 30 días</div>
+        </div>
+        <div class="metric-card mc-red">
+          <div class="metric-label">Compromisos vencidos</div>
+          <div class="metric-value mv-red" id="m-overdue">—</div>
+          <div class="metric-sub">requieren atención</div>
+        </div>
+      </div>
+
+      <!-- Quick projects -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Resumen de proyectos</span>
+          <span class="card-count" id="proj-count">— proyectos</span>
+        </div>
+        <div id="dashboard-projects">
+          <div class="loading-state"><div class="spinner"></div>Conecta tu Google Sheet para ver datos</div>
+        </div>
+      </div>
+
+      <!-- Overdue commitments -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Compromisos vencidos</span>
+          <button class="act-btn act-btn-accent" onclick="navigate('commitments')">Ver todos →</button>
+        </div>
+        <div id="dashboard-overdue">
+          <div class="empty-state">Sin datos aún</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="section" id="section-projects">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Todos los proyectos</span>
+          <span class="card-count" id="all-proj-count">—</span>
+        </div>
+        <div id="projects-table">
+          <div class="loading-state"><div class="spinner"></div>Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUDGETS -->
+    <div class="section" id="section-budgets">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Control de presupuestos</span>
+        </div>
+        <div id="budgets-table">
+          <div class="loading-state"><div class="spinner"></div>Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OBJECTIVES -->
+    <div class="section" id="section-objectives">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Objetivos por proyecto</span>
+        </div>
+        <div id="objectives-table">
+          <div class="loading-state"><div class="spinner"></div>Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MILESTONES -->
+    <div class="section" id="section-milestones">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Hitos y fechas clave</span>
+        </div>
+        <div id="milestones-list">
+          <div class="loading-state"><div class="spinner"></div>Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMITMENTS -->
+    <div class="section" id="section-commitments">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Compromisos del equipo</span>
+          <span class="card-count" id="comm-count">—</span>
+        </div>
+        <div class="comm-filters">
+          <button class="filter-btn active" onclick="filterCommitments('all', this)">Todos</button>
+          <button class="filter-btn" onclick="filterCommitments('Vencido', this)">Vencidos</button>
+          <button class="filter-btn" onclick="filterCommitments('En progreso', this)">En progreso</button>
+          <button class="filter-btn" onclick="filterCommitments('Pendiente', this)">Pendientes</button>
+          <button class="filter-btn" onclick="filterCommitments('Completado', this)">Completados</button>
+        </div>
+        <div id="commitments-table">
+          <div class="loading-state"><div class="spinner"></div>Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="section" id="section-team">
+      <div id="team-grid" class="team-grid">
+        <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div>Cargando...</div>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="section" id="section-setup">
+      <div class="setup-card">
+        <h2 style="font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:6px;">Configuración inicial</h2>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:24px;">Sigue estos pasos para conectar tu Google Sheet como base de datos.</p>
+
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h3>Crea tu Google Sheet</h3>
+            <p>Ve a <strong>sheets.google.com</strong> y crea una nueva hoja. Debe tener estas pestañas con estos encabezados exactos:</p>
+            <div class="code-block">
+              Proyectos: ID | Nombre | Descripción | Disciplina | FechaInicio | FechaTermino | Estado | AvanceFisico | Responsable<br><br>
+              Presupuestos: ProyectoID | Presupuesto | Ejecutado | Moneda<br><br>
+              Objetivos: ProyectoID | Objetivo | Estado | FechaLimite<br><br>
+              Hitos: ProyectoID | Hito | FechaEsperada | Estado<br><br>
+              Equipo: ID | Nombre | Rol | Email | Especialidad<br><br>
+              Compromisos: ID | ProyectoID | ProfesionalID | ProfesionalNombre | Compromiso | FechaLimite | Estado | Observaciones
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h3>Publica la hoja</h3>
+            <p>En Google Sheets: <strong>Archivo → Compartir → Publicar en la web</strong>. Selecciona "Toda la hoja de cálculo" en formato <strong>CSV</strong>. Activa "Publicar automáticamente".</p>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h3>Obtén el ID de tu hoja</h3>
+            <p>Copia el ID de la URL de tu hoja. Está entre <code style="font-family:var(--font-mono);color:var(--accent)">/d/</code> y <code style="font-family:var(--font-mono);color:var(--accent)">/edit</code>:</p>
+            <div class="code-block">https://docs.google.com/spreadsheets/d/<span style="color:#fff;background:rgba(200,255,87,0.2);padding:0 2px">TU_ID_AQUÍ</span>/edit</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h3>Conecta la app</h3>
+            <p>Pega el ID de tu hoja aquí:</p>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <input class="form-input" id="sheet-id-input" placeholder="Pega el ID de tu Google Sheet" style="flex:1">
+              <button class="btn btn-accent" onclick="connectSheet()">Conectar</button>
+            </div>
+            <p id="connect-msg" style="margin-top:8px;font-size:11px;color:var(--text3);"></p>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h3>Para editar compromisos desde la app</h3>
+            <p>Necesitas un pequeño script en Google Apps Script para guardar cambios. Es opcional — sin él, puedes ver todo pero editar directamente en la planilla.</p>
+            <div class="code-block" style="line-height:1.7">
+              1. En tu Sheet: <strong>Extensiones → Apps Script</strong><br>
+              2. Pega el código del archivo apps-script.gs<br>
+              3. Despliega como Web App (acceso: cualquier persona)<br>
+              4. Copia la URL y pégala en el campo de abajo
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <input class="form-input" id="script-url-input" placeholder="URL del Web App (Apps Script)" style="flex:1">
+              <button class="btn btn-accent" onclick="connectScript()">Conectar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- MODAL: Edit Commitment -->
+<div class="modal-overlay" id="commit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Editar compromiso</div>
+      <button class="modal-close" onclick="closeModal('commit-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Profesional</label>
+      <input class="form-input" id="edit-professional" readonly style="opacity:0.6">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Compromiso</label>
+      <textarea class="form-textarea" id="edit-commitment"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Fecha límite</label>
+        <input type="date" class="form-input" id="edit-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select class="form-select" id="edit-status">
+          <option>Pendiente</option>
+          <option>En progreso</option>
+          <option>Completado</option>
+          <option>Vencido</option>
+          <option>Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observaciones</label>
+      <textarea class="form-textarea" id="edit-observations" placeholder="Notas, comentarios, razones del cambio..."></textarea>
+    </div>
+    <input type="hidden" id="edit-commit-id">
+    <div class="form-footer">
+      <button class="btn" onclick="closeModal('commit-modal')">Cancelar</button>
+      <button class="btn btn-accent" onclick="saveCommitment()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let SHEET_ID = localStorage.getItem('pa_sheet_id') || '';
+let SCRIPT_URL = localStorage.getItem('pa_script_url') || '';
+let DATA = { projects:[], budgets:[], objectives:[], milestones:[], team:[], commitments:[] };
+let currentFilter = 'all';
+
+// Sheet tab names → gid mapping uses sheet name in URL
+const SHEETS = {
+  projects: 'Proyectos',
+  budgets: 'Presupuestos',
+  objectives: 'Objetivos',
+  milestones: 'Hitos',
+  team: 'Equipo',
+  commitments: 'Compromisos'
+};
+
+// ── NAVIGATION ──
+function navigate(section) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + section).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(section)) n.classList.add('active');
+  });
+  const titles = { dashboard:'Panel principal', projects:'Proyectos', budgets:'Presupuestos', objectives:'Objetivos', milestones:'Hitos', commitments:'Compromisos', team:'Profesionales', setup:'Configuración' };
+  document.getElementById('page-title').textContent = titles[section] || section;
+  const addActions = { commitments: true };
+  document.getElementById('topbar-action').style.display = addActions[section] ? 'inline-flex' : 'none';
+  if (section === 'setup') {
+    document.getElementById('sheet-id-input').value = SHEET_ID;
+    document.getElementById('script-url-input').value = SCRIPT_URL;
+  }
+}
+
+// ── GOOGLE SHEETS FETCH VÍA APPS SCRIPT (JSONP para evitar CORS) ──
+function fetchAllViaScript() {
+  return new Promise((resolve, reject) => {
+    if (!SCRIPT_URL) { reject(new Error('Configura la URL del Apps Script en Configuración (Paso 5).')); return; }
+    const callbackName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Tiempo de espera agotado. Verifica la URL del Apps Script.'));
+    }, 15000);
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[callbackName] = function(data) {
+      cleanup();
+      if (data.success) resolve(data.data);
+      else reject(new Error(data.error || 'Error en el script'));
+    };
+    script.src = `${SCRIPT_URL}?action=getData&callback=${callbackName}&t=${Date.now()}`;
+    script.onerror = () => { cleanup(); reject(new Error('No se pudo conectar al Apps Script. Verifica la URL.')); };
+    document.head.appendChild(script);
+  });
+}
+
+function csvToObjects(csv) {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = parseCSVRow(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseCSVRow(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h.trim().replace(/"/g,'')] = (vals[i] || '').replace(/"/g,'').trim());
+    return obj;
+  }).filter(row => Object.values(row).some(v => v));
+}
+
+function parseCSVRow(row) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < row.length; i++) {
+    const c = row[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+    else cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── LOAD ALL ──
+async function loadAllData() {
+  if (!SCRIPT_URL) { showAlert('Configura la URL del Apps Script en Configuración (Paso 5)', 'error'); navigate('setup'); return; }
+  updateStatus('● Sincronizando...', '#ffb547');
+  try {
+    const data = await fetchAllViaScript();
+    DATA = {
+      projects: data.projects || [],
+      budgets: data.budgets || [],
+      objectives: data.objectives || [],
+      milestones: data.milestones || [],
+      team: data.team || [],
+      commitments: data.commitments || []
+    };
+    updateStatus('● Conectado', '#4ade80');
+    const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-sync').textContent = 'Sync: ' + now;
+    renderAll();
+  } catch(e) {
+    updateStatus('● Error de conexión', '#ff5f57');
+    showAlert('Error: ' + e.message, 'error');
+  }
+}
+
+function updateStatus(text, color) {
+  const el = document.getElementById('sheets-status');
+  el.textContent = text;
+  el.style.color = color;
+}
+
+// ── RENDER ALL ──
+function renderAll() {
+  renderDashboard();
+  renderProjectsTable();
+  renderBudgets();
+  renderObjectives();
+  renderMilestones();
+  renderCommitments();
+  renderTeam();
+  updateOverdueBadge();
+}
+
+// ── HELPERS ──
+function formatMoney(n, currency) {
+  if (!n) return '—';
+  const num = parseFloat(n.replace(/[^0-9.]/g, ''));
+  if (isNaN(num)) return n;
+  if (num >= 1000000) return (currency||'$') + (num/1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (currency||'$') + (num/1000).toFixed(0) + 'K';
+  return (currency||'$') + num.toLocaleString('es-CL');
+}
+function statusBadge(s) {
+  const map = { 'En plazo':'badge-green','Activo':'badge-green','Completado':'badge-blue','En progreso':'badge-blue','Pendiente':'badge-amber','En riesgo':'badge-amber','Vencido':'badge-red','Cancelado':'badge-gray','Finalizado':'badge-blue' };
+  return `<span class="badge ${map[s]||'badge-gray'}">${s||'—'}</span>`;
+}
+function progressColor(pct) {
+  if (pct >= 70) return 'pf-accent';
+  if (pct >= 40) return 'pf-blue';
+  return 'pf-amber';
+}
+function initials(name) {
+  return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+}
+function avatarColor(name) {
+  const colors = ['av-g','av-b','av-a','av-r','av-p'];
+  let h = 0; for (let c of (name||'')) h = (h*31 + c.charCodeAt(0)) % colors.length;
+  return colors[h];
+}
+function daysDiff(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr.includes('/') ? dateStr.split('/').reverse().join('-') : dateStr);
+  if (isNaN(d)) return null;
+  return Math.ceil((d - new Date()) / 86400000);
+}
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr.includes('/') ? dateStr.split('/').reverse().join('-') : dateStr);
+    if (isNaN(d)) return dateStr;
+    return d.toLocaleDateString('es-CL', {day:'2-digit',month:'short',year:'2-digit'});
+  } catch { return dateStr; }
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const active = DATA.projects.filter(p => p.Estado === 'Vigente').length;
+  document.getElementById('m-projects').textContent = active;
+  document.getElementById('m-projects-sub').textContent = `${DATA.projects.filter(p=>p.Estado==='No Vigente').length} no vigentes`;
+
+  const totalBudget = DATA.budgets.reduce((s,b) => s + (parseFloat(b.Presupuesto)||0), 0);
+  const totalExec = DATA.budgets.reduce((s,b) => s + (parseFloat(b.Ejecutado)||0), 0);
+  document.getElementById('m-budget').textContent = formatMoney(String(totalBudget));
+  document.getElementById('m-budget-sub').textContent = `${Math.round(totalExec/totalBudget*100)||0}% ejecutado`;
+
+  const upcoming = DATA.milestones.filter(m => { const d = daysDiff(m.FechaEsperada); return d !== null && d >= 0 && d <= 30 && m.Estado !== 'Completado'; }).length;
+  document.getElementById('m-milestones').textContent = upcoming;
+
+  const overdue = DATA.commitments.filter(c => c.Estado === 'Vencido' || (c.Estado !== 'Completado' && daysDiff(c.FechaLimite) !== null && daysDiff(c.FechaLimite) < 0)).length;
+  document.getElementById('m-overdue').textContent = overdue;
+
+  // Projects summary
+  const projEl = document.getElementById('dashboard-projects');
+  document.getElementById('proj-count').textContent = DATA.projects.length + ' proyectos';
+  document.getElementById('all-proj-count').textContent = DATA.projects.length + ' proyectos';
+  if (!DATA.projects.length) { projEl.innerHTML = '<div class="empty-state">No hay proyectos en la hoja</div>'; return; }
+
+  let html = `<table><thead><tr><th>Proyecto</th><th>Tipo</th><th>Estado</th><th>Equipo</th><th>Director</th><th>Ingeniero</th><th>Término</th></tr></thead><tbody>`;
+  DATA.projects.forEach(p => {
+    const projTeam = DATA.commitments.filter(c=>c.ProyectoID===p.ID).map(c=>c.ProfesionalNombre).filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
+    html += `<tr>
+      <td><div class="project-name">${p.Nombre||'—'}</div><div class="project-code">${p.ID||''}</div></td>
+      <td><span class="badge badge-gray">${p.TipoProyecto||'—'}</span></td>
+      <td>${statusBadge(p.Estado)}</td>
+      <td><div class="avatars">${projTeam.map(n=>`<div class="av ${avatarColor(n)}">${initials(n)}</div>`).join('')}</div></td>
+      <td style="color:var(--text2);font-size:12px;">${p.Director||'—'}</td>
+      <td style="color:var(--text2);font-size:12px;">${p.Ingeniero||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3);">${formatDate(p.FechaTermino)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  projEl.innerHTML = html;
+
+  // Overdue commitments
+  const overdueComms = DATA.commitments.filter(c => c.Estado === 'Vencido' || (c.Estado !== 'Completado' && c.Estado !== 'Cancelado' && daysDiff(c.FechaLimite) !== null && daysDiff(c.FechaLimite) < 0));
+  const odEl = document.getElementById('dashboard-overdue');
+  if (!overdueComms.length) { odEl.innerHTML = '<div class="empty-state" style="color:var(--green)">✓ Sin compromisos vencidos</div>'; return; }
+  let odHtml = `<table><thead><tr><th>Profesional</th><th>Compromiso</th><th>Proyecto</th><th>Vencimiento</th><th></th></tr></thead><tbody>`;
+  overdueComms.slice(0,5).forEach(c => {
+    const proj = DATA.projects.find(p=>p.ID===c.ProyectoID);
+    odHtml += `<tr>
+      <td><div class="avatars" style="display:inline-flex;margin-right:6px;vertical-align:middle"><div class="av av-r">${initials(c.ProfesionalNombre)}</div></div>${c.ProfesionalNombre||'—'}</td>
+      <td>${c.Compromiso||'—'}</td>
+      <td style="font-size:11px;color:var(--text3);">${proj?.Nombre||c.ProyectoID||'—'}</td>
+      <td><span class="badge badge-red">${formatDate(c.FechaLimite)}</span></td>
+      <td><button class="act-btn act-btn-accent" onclick="openEditCommit(${JSON.stringify(c).replace(/"/g,'&quot;')})">Editar</button></td>
+    </tr>`;
+  });
+  odHtml += '</tbody></table>';
+  odEl.innerHTML = odHtml;
+}
+
+// ── PROJECTS ──
+function renderProjectsTable() {
+  const el = document.getElementById('projects-table');
+  if (!DATA.projects.length) { el.innerHTML = '<div class="empty-state">No hay proyectos</div>'; return; }
+  let html = `<table><thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Estado</th><th>Director</th><th>Gestor</th><th>Ingeniero</th><th>Inicio</th><th>Término</th></tr></thead><tbody>`;
+  DATA.projects.forEach(p => {
+    html += `<tr>
+      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${p.ID||'—'}</td>
+      <td><div class="project-name">${p.Nombre||'—'}</div></td>
+      <td><span class="badge badge-gray">${p.TipoProyecto||'—'}</span></td>
+      <td>${statusBadge(p.Estado)}</td>
+      <td style="font-size:12px;color:var(--text2)">${p.Director||'—'}</td>
+      <td style="font-size:12px;color:var(--text2)">${p.Gestor||'—'}</td>
+      <td style="font-size:12px;color:var(--text2)">${p.Ingeniero||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${formatDate(p.FechaInicio)}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${formatDate(p.FechaTermino)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ── BUDGETS ──
+function renderBudgets() {
+  const el = document.getElementById('budgets-table');
+  if (!DATA.budgets.length) { el.innerHTML = '<div class="empty-state">No hay presupuestos</div>'; return; }
+  let html = `<table><thead><tr><th>Proyecto</th><th>Presupuesto</th><th>Ejecutado</th><th>Disponible</th><th>% Ejecución</th></tr></thead><tbody>`;
+  DATA.budgets.forEach(b => {
+    const proj = DATA.projects.find(p=>p.ID===b.ProyectoID);
+    const presupStr = (b.Presupuesto||'0').replace(/\./g,'').replace(/,/,'.');
+    const execStr = (b.Ejecutado||'0').replace(/\./g,'').replace(/,/,'.');
+    const presup = parseFloat(presupStr)||0;
+    const exec = parseFloat(execStr)||0;
+    const disp = presup - exec;
+    const pct = presup ? Math.round(exec/presup*100) : 0;
+    const col = pct > 90 ? 'pf-red' : pct > 70 ? 'pf-amber' : 'pf-accent';
+    const badgeClass = pct > 90 ? 'badge-red' : pct > 70 ? 'badge-amber' : 'badge-green';
+    html += `<tr>
+      <td><div class="project-name">${proj?.Nombre||b.ProyectoID||'—'}</div><div class="project-code">${b.ProyectoID||''}</div></td>
+      <td style="font-family:var(--font-mono)">${b.Presupuesto ? '$'+b.Presupuesto : '—'}</td>
+      <td style="font-family:var(--font-mono);color:var(--amber)">${b.Ejecutado ? '$'+b.Ejecutado : '—'}</td>
+      <td style="font-family:var(--font-mono);color:${disp<0?'var(--red)':'var(--green)'}">${presup ? '$'+(presup-exec).toLocaleString('es-CL') : '—'}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="progress" style="flex:1"><div class="progress-fill ${col}" style="width:${Math.min(pct,100)}%"></div></div>
+          <span class="badge ${badgeClass}">${pct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ── OBJECTIVES ──
+function renderObjectives() {
+  const el = document.getElementById('objectives-table');
+  if (!DATA.objectives.length) { el.innerHTML = '<div class="empty-state">No hay objetivos</div>'; return; }
+  let html = `<table><thead><tr><th>Proyecto</th><th>Objetivo</th><th>Estado</th><th>Fecha límite</th></tr></thead><tbody>`;
+  DATA.objectives.forEach(o => {
+    const proj = DATA.projects.find(p=>p.ID===o.ProyectoID);
+    html += `<tr>
+      <td style="font-size:12px;color:var(--text2)">${proj?.Nombre||o.ProyectoID||'—'}</td>
+      <td>${o.Objetivo||'—'}</td>
+      <td>${statusBadge(o.Estado)}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${formatDate(o.FechaLimite)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ── MILESTONES ──
+function renderMilestones() {
+  const el = document.getElementById('milestones-list');
+  if (!DATA.milestones.length) { el.innerHTML = '<div class="empty-state">No hay hitos</div>'; return; }
+  const sorted = [...DATA.milestones].sort((a,b) => {
+    const da = new Date(a.FechaEsperada); const db = new Date(b.FechaEsperada);
+    return da - db;
+  });
+  let html = '';
+  sorted.forEach(m => {
+    const proj = DATA.projects.find(p=>p.ID===m.ProyectoID);
+    const d = daysDiff(m.FechaEsperada);
+    let dotClass = 'md-gray', timeLabel = '';
+    if (m.Estado === 'Completado') { dotClass = 'md-green'; timeLabel = 'Completado'; }
+    else if (d === null) { dotClass = 'md-gray'; }
+    else if (d < 0) { dotClass = 'md-red'; timeLabel = `Vencido hace ${Math.abs(d)}d`; }
+    else if (d <= 7) { dotClass = 'md-amber'; timeLabel = `En ${d}d`; }
+    else if (d <= 30) { dotClass = 'md-amber'; timeLabel = `En ${d}d`; }
+    else { dotClass = 'md-gray'; }
+    html += `<div class="milestone-row">
+      <div class="milestone-dot ${dotClass}"></div>
+      <div class="milestone-info">
+        <div class="milestone-name">${m.Hito||'—'}</div>
+        <div class="milestone-meta">${proj?.Nombre||m.ProyectoID||'—'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        ${timeLabel ? `<span class="badge ${dotClass==='md-red'?'badge-red':dotClass==='md-amber'?'badge-amber':'badge-green'}">${timeLabel}</span>` : ''}
+        ${statusBadge(m.Estado)}
+        <div class="milestone-date">${formatDate(m.FechaEsperada)}</div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── COMMITMENTS ──
+function renderCommitments(filter) {
+  const f = filter || currentFilter;
+  const el = document.getElementById('commitments-table');
+  let comms = DATA.commitments;
+  if (f !== 'all') comms = comms.filter(c => {
+    if (f === 'Vencido') return c.Estado === 'Vencido' || (c.Estado !== 'Completado' && c.Estado !== 'Cancelado' && daysDiff(c.FechaLimite) !== null && daysDiff(c.FechaLimite) < 0);
+    return c.Estado === f;
+  });
+  document.getElementById('comm-count').textContent = comms.length + ' compromisos';
+  if (!comms.length) { el.innerHTML = '<div class="empty-state">No hay compromisos para este filtro</div>'; return; }
+  let html = `<table><thead><tr><th>Profesional</th><th>Compromiso</th><th>Proyecto</th><th>Fecha límite</th><th>Estado</th><th>Observaciones</th><th></th></tr></thead><tbody>`;
+  comms.forEach(c => {
+    const proj = DATA.projects.find(p=>p.ID===c.ProyectoID);
+    const d = daysDiff(c.FechaLimite);
+    const isOverdue = c.Estado !== 'Completado' && c.Estado !== 'Cancelado' && d !== null && d < 0;
+    const badgeClass = c.Estado === 'Completado' ? 'badge-blue' : c.Estado === 'Vencido' || isOverdue ? 'badge-red' : c.Estado === 'En progreso' ? 'badge-green' : 'badge-amber';
+    html += `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="av ${avatarColor(c.ProfesionalNombre)}" style="width:26px;height:26px;font-size:9px;flex-shrink:0">${initials(c.ProfesionalNombre)}</div>
+          <span style="font-size:12px">${c.ProfesionalNombre||'—'}</span>
+        </div>
+      </td>
+      <td style="max-width:200px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${c.Compromiso||'—'}</div></td>
+      <td style="font-size:11px;color:var(--text3)">${proj?.Nombre||c.ProyectoID||'—'}</td>
+      <td>
+        <span style="font-family:var(--font-mono);font-size:11px;color:${isOverdue?'var(--red)':'var(--text3)'}">${formatDate(c.FechaLimite)}</span>
+        ${isOverdue ? `<span class="badge badge-red" style="margin-left:4px">${Math.abs(d)}d atraso</span>` : ''}
+      </td>
+      <td><span class="badge ${badgeClass}">${c.Estado||'—'}</span></td>
+      <td style="font-size:11px;color:var(--text3);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.Observaciones||'—'}</td>
+      <td><button class="act-btn act-btn-accent" onclick='openEditCommit(${JSON.stringify(c)})'>Editar</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function filterCommitments(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCommitments(f);
+}
+
+// ── TEAM ──
+function renderTeam() {
+  const el = document.getElementById('team-grid');
+  if (!DATA.team.length) { el.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No hay profesionales</div>'; return; }
+  el.innerHTML = DATA.team.map(t => {
+    const comms = DATA.commitments.filter(c=>c.ProfesionalID===t.ID||c.ProfesionalNombre===t.Nombre);
+    const done = comms.filter(c=>c.Estado==='Completado').length;
+    const pending = comms.filter(c=>c.Estado!=='Completado'&&c.Estado!=='Cancelado').length;
+    return `<div class="team-card">
+      <div class="team-avatar-lg ${avatarColor(t.Nombre)}">${initials(t.Nombre)}</div>
+      <div>
+        <div class="team-name">${t.Nombre||'—'}</div>
+        <div class="team-role">${t.Rol||'—'}</div>
+        <div class="team-role" style="margin-top:1px;font-size:10px">${t.Especialidad||''}</div>
+      </div>
+      <div class="team-stats">
+        <div class="team-stat"><strong>${done}</strong> completados</div>
+        <div class="team-stat" style="margin-left:8px"><strong>${pending}</strong> activos</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── OVERDUE BADGE ──
+function updateOverdueBadge() {
+  const overdue = DATA.commitments.filter(c => c.Estado === 'Vencido' || (c.Estado !== 'Completado' && c.Estado !== 'Cancelado' && daysDiff(c.FechaLimite) !== null && daysDiff(c.FechaLimite) < 0)).length;
+  const badge = document.getElementById('overdue-badge');
+  badge.textContent = overdue;
+  badge.style.display = overdue > 0 ? 'inline' : 'none';
+}
+
+// ── EDIT COMMITMENT MODAL ──
+function openEditCommit(c) {
+  document.getElementById('edit-professional').value = c.ProfesionalNombre || '';
+  document.getElementById('edit-commitment').value = c.Compromiso || '';
+  document.getElementById('edit-observations').value = c.Observaciones || '';
+  document.getElementById('edit-status').value = c.Estado || 'Pendiente';
+  if (c.FechaLimite) {
+    try {
+      const d = new Date(c.FechaLimite.includes('/') ? c.FechaLimite.split('/').reverse().join('-') : c.FechaLimite);
+      if (!isNaN(d)) document.getElementById('edit-date').value = d.toISOString().split('T')[0];
+      else document.getElementById('edit-date').value = '';
+    } catch { document.getElementById('edit-date').value = ''; }
+  }
+  document.getElementById('edit-commit-id').value = c.ID || '';
+  document.getElementById('commit-modal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function saveCommitment() {
+  const id = document.getElementById('edit-commit-id').value;
+  const status = document.getElementById('edit-status').value;
+  const date = document.getElementById('edit-date').value;
+  const commitment = document.getElementById('edit-commitment').value;
+  const obs = document.getElementById('edit-observations').value;
+
+  // Update local data
+  const idx = DATA.commitments.findIndex(c => c.ID === id);
+  if (idx >= 0) {
+    DATA.commitments[idx].Estado = status;
+    DATA.commitments[idx].FechaLimite = date;
+    DATA.commitments[idx].Compromiso = commitment;
+    DATA.commitments[idx].Observaciones = obs;
+  }
+
+  // Try to sync to Google Sheets via Apps Script
+  if (SCRIPT_URL) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action:'updateCommitment', id, status, date, commitment, observations: obs })
+      });
+      showAlert('Compromiso actualizado y guardado en Google Sheets ✓', 'success');
+    } catch(e) {
+      showAlert('Guardado localmente. No se pudo sincronizar con Sheets. Edita manualmente la planilla.', 'error');
+    }
+  } else {
+    showAlert('Cambio reflejado localmente. Conecta el Apps Script para guardar en la planilla.', 'success');
+  }
+
+  closeModal('commit-modal');
+  renderAll();
+}
+
+// ── SETUP ──
+function connectSheet() {
+  const id = document.getElementById('sheet-id-input').value.trim();
+  if (!id) { document.getElementById('connect-msg').textContent = 'Ingresa un ID válido.'; return; }
+  SHEET_ID = id;
+  localStorage.setItem('pa_sheet_id', id);
+  document.getElementById('connect-msg').textContent = 'ID guardado. Cargando datos...';
+  document.getElementById('connect-msg').style.color = 'var(--green)';
+  loadAllData().then(() => startAutoSync());
+}
+
+function connectScript() {
+  const url = document.getElementById('script-url-input').value.trim();
+  if (!url) return;
+  SCRIPT_URL = url;
+  localStorage.setItem('pa_script_url', url);
+  showAlert('URL del Apps Script guardada ✓', 'success');
+}
+
+// ── ALERT ──
+function showAlert(msg, type) {
+  const el = document.getElementById('global-alert');
+  el.textContent = msg;
+  el.className = `alert alert-${type} show`;
+  setTimeout(() => el.className = 'alert', 4000);
+}
+
+// ── AUTO SYNC ──
+const SYNC_INTERVAL = 5 * 60; // 5 minutos en segundos
+let syncCountdown = SYNC_INTERVAL;
+let syncTimer = null;
+let countdownTimer = null;
+
+function startAutoSync() {
+  if (!SHEET_ID) return;
+  clearInterval(syncTimer);
+  clearInterval(countdownTimer);
+  syncCountdown = SYNC_INTERVAL;
+  updateCountdown();
+
+  countdownTimer = setInterval(() => {
+    syncCountdown--;
+    updateCountdown();
+    if (syncCountdown <= 0) {
+      syncCountdown = SYNC_INTERVAL;
+      loadAllData();
+    }
+  }, 1000);
+}
+
+function updateCountdown() {
+  const el = document.getElementById('last-sync');
+  if (!el) return;
+  const min = Math.floor(syncCountdown / 60);
+  const sec = String(syncCountdown % 60).padStart(2, '0');
+  const lastSync = localStorage.getItem('pa_last_sync') || '';
+  el.textContent = `Auto-sync en ${min}:${sec}${lastSync ? ' · Último: ' + lastSync : ''}`;
+}
+
+// Guardar hora del último sync exitoso
+const _origLoadAllData = loadAllData;
+async function loadAllDataWithTimestamp() {
+  await _origLoadAllData();
+  const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+  localStorage.setItem('pa_last_sync', now);
+}
+
+// ── INIT ──
+window.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+
+// Reemplazar botón sincronizar para reiniciar countdown
+document.querySelector('button[onclick="loadAllData()"]').setAttribute('onclick', 'manualSync()');
+function manualSync() {
+  syncCountdown = SYNC_INTERVAL;
+  loadAllData();
+}
+
+if (SHEET_ID) {
+  document.getElementById('sheet-id-input').value = SHEET_ID;
+  loadAllData().then(() => startAutoSync());
+} else {
+  updateStatus('● Sin conectar', 'var(--text3)');
+  navigate('setup');
+}
+</script>
+</body>
+</html>
